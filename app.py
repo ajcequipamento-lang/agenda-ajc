@@ -41,40 +41,85 @@ def next_weekday(target_wd):
 
 def parse_datetime_pt(text):
     now = datetime.now()
-    lower = text.lower()
+    lower = text.lower().strip()
     target = now
 
+    # DATA
     if "amanhã" in lower or "amanha" in lower:
         target = now + timedelta(days=1)
     elif "hoje" in lower:
         target = now
+    else:
+        weekdays = {
+            "segunda": 0,
+            "terça": 1,
+            "terca": 1,
+            "quarta": 2,
+            "quinta": 3,
+            "sexta": 4,
+            "sábado": 5,
+            "sabado": 5,
+            "domingo": 6
+        }
 
-    weekdays = {
-        "segunda":0, "terça":1, "terca":1, "quarta":2,
-        "quinta":3, "sexta":4, "sábado":5, "sabado":5, "domingo":6
-    }
-    for name, wd in weekdays.items():
-        if name in lower:
-            target = next_weekday(wd)
-            break
+        for name, wd in weekdays.items():
+            if name in lower:
+                days_ahead = (wd - now.weekday()) % 7
+                if days_ahead == 0:
+                    days_ahead = 7
+                target = now + timedelta(days=days_ahead)
+                break
 
-    d = re.search(r'\b(\d{1,2})/(\d{1,2})(?:/(\d{4}))?\b', lower)
-    if d:
-        day, month = int(d.group(1)), int(d.group(2))
-        year = int(d.group(3) or now.year)
+    # DATA DIGITADA: 15/08 OU 15/08/2026
+    match_date = re.search(
+        r'\b(\d{1,2})/(\d{1,2})(?:/(\d{4}))?\b',
+        lower
+    )
+
+    if match_date:
+        day = int(match_date.group(1))
+        month = int(match_date.group(2))
+        year = int(match_date.group(3) or now.year)
+
         try:
-            target = datetime(year, month, day)
+            target = target.replace(
+                year=year,
+                month=month,
+                day=day
+            )
         except ValueError:
             pass
 
-    hour, minute = 9, 0
-    hm = re.search(r'\b(?:às|as)?\s*(\d{1,2})(?::(\d{2}))?\s*(?:h|horas|hora)?\b', lower)
-    if hm:
-        h, m = int(hm.group(1)), int(hm.group(2) or 0)
-        if 0 <= h <= 23 and 0 <= m <= 59:
-            hour, minute = h, m
+    # HORÁRIO: "às 9 horas", "às 10:30", "8h"
+    hour = 9
+    minute = 0
 
-    return target.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    match_time = re.search(
+        r'(?:às|as)\s*(\d{1,2})(?::(\d{2}))?\s*(?:h|horas|hora)?',
+        lower
+    )
+
+    if not match_time:
+        match_time = re.search(
+            r'\b(\d{1,2})h(?:(\d{2}))?\b',
+            lower
+        )
+
+    if match_time:
+        hour = int(match_time.group(1))
+        minute = int(match_time.group(2) or 0)
+
+        if hour > 23:
+            hour = 9
+        if minute > 59:
+            minute = 0
+
+    return target.replace(
+        hour=hour,
+        minute=minute,
+        second=0,
+        microsecond=0
+    )
 
 def lookup_client(text):
     con = db()
