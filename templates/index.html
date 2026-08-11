@@ -1,0 +1,146 @@
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111f">
+<link rel="manifest" href="/manifest.json">
+<title>Agenda AJC</title>
+<style>
+:root{--bg:#07111f;--panel:#0d1c2e;--line:#213955;--txt:#eef5ff;--muted:#9db0c7;--blue:#1976ff;--green:#20a66b;--red:#d54a4a}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#07111f,#0a1422);color:var(--txt);font-family:Arial,Segoe UI,sans-serif;min-height:100vh}
+.app{max-width:620px;margin:auto;padding:18px 14px 96px}
+.head{display:flex;justify-content:space-between;align-items:center;margin:6px 2px 18px}
+.brand{font-size:25px;font-weight:800}.sub{font-size:12px;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 12px 25px rgba(0,0,0,.25)}
+h2{font-size:17px;margin:0 0 12px}
+textarea,input,select{width:100%;background:#081522;color:#fff;border:1px solid #2b4868;border-radius:12px;padding:13px;font-size:16px;outline:none}
+textarea{min-height:92px}
+button{border:0;border-radius:12px;padding:13px 15px;font-size:15px;font-weight:700;color:white;cursor:pointer}
+.blue{background:var(--blue)} .green{background:var(--green)} .red{background:var(--red)} .ghost{background:#18334f}
+.mic{width:78px;height:78px;border-radius:50%;font-size:30px;background:var(--blue);display:block;margin:14px auto;box-shadow:0 0 0 10px rgba(25,118,255,.12)}
+.row{display:flex;gap:9px;flex-wrap:wrap}.row>*{flex:1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}
+label{font-size:11px;color:var(--muted);display:block;margin:0 0 5px}
+.item{background:#091725;border:1px solid #203c5d;border-radius:13px;padding:12px;margin-top:9px}
+.tag{display:inline-block;background:#173b61;border-radius:20px;padding:4px 8px;font-size:11px}
+.small{font-size:12px;color:var(--muted)} .status{font-size:12px;margin-top:6px}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#091522;border-top:1px solid #1e3856;display:flex;justify-content:center;z-index:10}
+.nav button{background:transparent;color:#b8c7da;border-radius:0;max-width:200px}
+.section{display:none}.section.active{display:block}
+@media(max-width:430px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="head">
+    <div><div class="brand">Agenda AJC</div><div class="sub">Assistente comercial por voz</div></div>
+    <div>🎙️</div>
+  </div>
+
+  <section id="home" class="section active">
+    <div class="card">
+      <h2>Fale com a Agenda</h2>
+      <button class="mic" onclick="ouvir()">🎤</button>
+      <div class="small" id="voice">Toque no microfone e fale seu comando.</div>
+      <textarea id="cmd" placeholder="Ex.: Agenda, amanhã às 9 horas mande um e-mail para Marcelo perguntando se precisa de etiquetas."></textarea>
+      <div class="row" style="margin-top:9px">
+        <button class="blue" onclick="interpretar()">Interpretar</button>
+        <button class="ghost" onclick="document.getElementById('cmd').value=''">Limpar</button>
+      </div>
+    </div>
+
+    <div id="confirm" class="card" style="display:none">
+      <h2>Confira antes de agendar</h2>
+      <div class="grid">
+        <div><label>Tipo</label><select id="type"><option>EMAIL</option><option>LEMBRETE</option></select></div>
+        <div><label>Data/Hora</label><input type="datetime-local" id="when"></div>
+        <div class="full"><label>Destinatário</label><input id="to" placeholder="cliente@empresa.com.br"></div>
+        <div class="full"><label>Assunto</label><input id="subject"></div>
+        <div class="full"><label>Mensagem</label><textarea id="msg"></textarea></div>
+      </div>
+      <button class="green" style="width:100%;margin-top:10px" onclick="salvar()">Confirmar e agendar</button>
+      <div id="saveStatus" class="status"></div>
+    </div>
+
+    <div class="card">
+      <h2>Próximos compromissos</h2>
+      <div id="tasks"></div>
+    </div>
+  </section>
+
+  <section id="clientsSec" class="section">
+    <div class="card">
+      <h2>Novo cliente</h2>
+      <input id="cname" placeholder="Nome do cliente">
+      <input id="cemail" placeholder="E-mail" style="margin-top:8px">
+      <input id="cphone" placeholder="Telefone / WhatsApp" style="margin-top:8px">
+      <button class="green" style="width:100%;margin-top:10px" onclick="addClient()">Salvar cliente</button>
+    </div>
+    <div class="card"><h2>Clientes cadastrados</h2><div id="clients"></div></div>
+  </section>
+
+  <section id="help" class="section">
+    <div class="card">
+      <h2>Exemplos de comandos</h2>
+      <div class="item">“Agenda, amanhã às 9 horas mande um e-mail para Marcelo perguntando se precisa de etiquetas.”</div>
+      <div class="item">“Agenda, sexta às 14 horas me lembre de ligar para Márcia.”</div>
+      <div class="item">“Agenda, dia 15/08 às 8 horas mande e-mail para cliente@empresa.com.br dizendo que o orçamento está pronto.”</div>
+    </div>
+  </section>
+</div>
+
+<div class="nav">
+  <button onclick="show('home')">🏠 Agenda</button>
+  <button onclick="show('clientsSec')">👥 Clientes</button>
+  <button onclick="show('help')">❓ Ajuda</button>
+</div>
+
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}
+function show(id){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='clientsSec')loadClients()}
+
+function ouvir(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){document.getElementById('voice').textContent='Seu navegador não liberou o reconhecimento de voz. Use Chrome no Android.';return}
+ const r=new SR(); r.lang='pt-BR'; r.interimResults=false;
+ document.getElementById('voice').textContent='Ouvindo... fale agora.';
+ r.onresult=e=>{document.getElementById('cmd').value=e.results[0][0].transcript;document.getElementById('voice').textContent='Comando reconhecido.';interpretar()}
+ r.onerror=()=>document.getElementById('voice').textContent='Não consegui entender. Tente novamente.';
+ r.start()
+}
+async function interpretar(){
+ let text=document.getElementById('cmd').value.trim(); if(!text)return alert('Fale ou digite um comando.');
+ let r=await fetch('/api/interpret',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+ let d=await r.json(); if(d.error)return alert(d.error);
+ type.value=d.action_type; when.value=d.scheduled_at; to.value=d.recipient||''; subject.value=d.subject||''; msg.value=d.message||'';
+ confirm.style.display='block'; confirm.scrollIntoView({behavior:'smooth'})
+}
+async function salvar(){
+ let d={title:type.value==='EMAIL'?'Enviar e-mail':'Lembrete',action_type:type.value,scheduled_at:when.value,recipient:to.value,subject:subject.value,message:msg.value};
+ let r=await fetch('/api/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+ let j=await r.json(); saveStatus.textContent=j.ok?'Agendado com sucesso.':'Erro ao agendar.'; if(j.ok)loadTasks()
+}
+async function loadTasks(){
+ let a=await (await fetch('/api/tasks')).json(); let b=document.getElementById('tasks');
+ if(!a.length){b.innerHTML='<div class="small">Nenhum compromisso ainda.</div>';return}
+ b.innerHTML=a.map(t=>`<div class="item"><span class="tag">${t.action_type}</span> <b>${t.title}</b><div class="small">${new Date(t.scheduled_at).toLocaleString('pt-BR')}</div>${t.recipient?`<div>${t.recipient}</div>`:''}<div class="status">Status: ${t.status}</div><button class="red" style="margin-top:8px;padding:8px 10px" onclick="delTask(${t.id})">Excluir</button></div>`).join('')
+}
+async function delTask(id){await fetch('/api/tasks/'+id,{method:'DELETE'});loadTasks()}
+async function addClient(){
+ let d={name:cname.value,email:cemail.value,phone:cphone.value};
+ let r=await fetch('/api/clients',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+ let j=await r.json(); if(j.ok){cname.value=cemail.value=cphone.value='';loadClients()}else alert(j.error||'Erro')
+}
+async function loadClients(){
+ let a=await (await fetch('/api/clients')).json(); let b=document.getElementById('clients');
+ b.innerHTML=a.length?a.map(c=>`<div class="item"><b>${c.name}</b><div class="small">${c.email}</div>${c.phone?`<div class="small">${c.phone}</div>`:''}<button class="red" style="margin-top:8px;padding:8px 10px" onclick="delClient(${c.id})">Excluir</button></div>`).join(''):'<div class="small">Nenhum cliente cadastrado.</div>'
+}
+async function delClient(id){await fetch('/api/clients/'+id,{method:'DELETE'});loadClients()}
+loadTasks();
+setInterval(loadTasks,30000);
+</script>
+</body>
+</html>
