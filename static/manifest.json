@@ -1,0 +1,9 @@
+{
+  "name": "Agenda Eletrônica AJC",
+  "short_name": "Agenda AJC",
+  "description": "Assistente eletrônico AJC para agenda, lembretes e comandos por voz",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#07111f"
+}
