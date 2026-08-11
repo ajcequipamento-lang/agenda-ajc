@@ -238,7 +238,8 @@ def del_task(tid):
     con.commit(); con.close()
     return jsonify({"ok":True})
 
+init_db()
+threading.Thread(target=scheduler, daemon=True).start()
+
 if __name__ == "__main__":
-    init_db()
-    threading.Thread(target=scheduler, daemon=True).start()
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT","5050")), debug=False)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5050")), debug=False)
