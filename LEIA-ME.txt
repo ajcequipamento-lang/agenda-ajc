@@ -1,0 +1,33 @@
+
+AGENDA AJC MOBILE
+
+Esta versão foi feita para celular Android como aplicativo web instalável (PWA).
+
+RECURSOS
+- Comando por voz
+- Comando digitado
+- Cadastro de clientes
+- Agenda de compromissos
+- E-mails programados
+- Instalação como ícone na tela inicial quando estiver hospedado em HTTPS
+
+IMPORTANTE
+Para funcionar no celular fora da sua rede e continuar enviando e-mails com o app fechado,
+o sistema precisa ficar hospedado em um servidor online.
+
+HOSPEDAGEM
+O projeto já inclui render.yaml e requirements.txt para facilitar publicação em um serviço Python.
+
+E-MAIL REAL
+Configure no servidor:
+AJC_SMTP_HOST=smtp.gmail.com
+AJC_SMTP_PORT=587
+AJC_EMAIL_USER=seuemail@gmail.com
+AJC_EMAIL_PASSWORD=senha_de_app
+AJC_EMAIL_FROM=seuemail@gmail.com
+
+No Gmail, prefira senha de app, não a senha normal da conta.
+
+INSTALAR NO ANDROID
+Depois de publicar e abrir o endereço HTTPS no Chrome:
+Menu ⋮ > Adicionar à tela inicial / Instalar app.
