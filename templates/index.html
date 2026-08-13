@@ -115,7 +115,7 @@ async function interpretar(){
  let text=document.getElementById('cmd').value.trim(); if(!text)return alert('Fale ou digite um comando.');
  let r=await fetch('/api/interpret',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
  let d=await r.json(); if(d.error)return alert(d.error);
- type.value=d.action_type; when.value=d.scheduled_at; to.value=d.recipient||''; subject.value=d.subject||''; msg.value=d.message||'';
+ type.value=d.action_type; document.getElementById('when').value=d.scheduled_at || ''; to.value=d.recipient||''; subject.value=d.subject||''; msg.value=d.message||'';
 document.getElementById('confirm').style.display='block';
 }
 async function salvar(){
