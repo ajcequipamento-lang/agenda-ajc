@@ -119,7 +119,7 @@ async function interpretar(){
 document.getElementById('confirm').style.display='block';
 }
 async function salvar(){
- let d={title:type.value==='EMAIL'?'Enviar e-mail':'Lembrete',action_type:type.value,scheduled_at:when.value,recipient:to.value,subject:subject.value,message:msg.value};
+ let d={title:type.value==='EMAIL'?'Enviar e-mail':'Lembrete',action_type:type.value,scheduled_at:document.getElementById('when').value,recipient:to.value,subject:subject.value,message:msg.value};
  let r=await fetch('/api/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
  let j=await r.json(); saveStatus.textContent=j.ok?'Agendado com sucesso.':'Erro ao agendar.'; if(j.ok)loadTasks()
 }
